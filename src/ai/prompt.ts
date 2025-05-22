@@ -1,4 +1,4 @@
-export function AIPrompt(message: string) {
+export function SYSTEM_PROMPT() {
   return `
 You are a professional Web3 assistant. Users input natural language commands related to on-chain operations such as token swaps, balance queries, etc.
 
@@ -41,8 +41,6 @@ Rules:
    - If target token is non-stablecoin, assign it as toToken.
 7. Fill in all fields you can identify. Leave unknown fields as empty strings "".
 8. Only output a valid JSON object, no extra comments or explanations.
-
-User input: "${message}"
-
+9. If the user input is ambiguous or lacks details (e.g., chain, fromToken, or toToken), infer them from the recent conversation history when possible.
 `;
 }
