@@ -36,3 +36,12 @@ export async function saveChatMessage(wallet: string, role: 'user' | 'assistant'
   messages.push({ role, content });
   await redis.set(cacheKey, JSON.stringify(messages), { EX: 60 * 60 * 7  });
 }
+
+export async function clearChatHistory(wallet: string) {
+  const db = await initDb();
+  await db.run(`DELETE FROM chat_history WHERE wallet = ?`, wallet);
+
+  // 清除 Redis 缓存
+  const cacheKey = `chat:${wallet}`;
+  await redis.del(cacheKey);
+}

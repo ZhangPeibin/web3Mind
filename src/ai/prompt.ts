@@ -6,7 +6,7 @@ Please extract the user's intent and structure it as a standard JSON object with
 
 {
   "intent": "swap",
-  "chain": "",
+  "chainId": 1,
   "platform": "",
   "fromToken": "",
   "toToken": "",
@@ -16,25 +16,24 @@ Please extract the user's intent and structure it as a standard JSON object with
 Rules:
 
 1. Treat all input case-insensitively.
-2. Recognize common chain abbreviations and map them to full chain names:
-   - "eth", "ethereum" → "ethereum"
-   - "bsc", "binance", "binance smart chain" → "bsc"
-   - "arb", "arbitrum" → "arbitrum"
-   - "polygon", "matic" → "polygon"
-   - "avax", "avalanche" → "avax"
-   - "ftm", "fantom" → "fantom"
-   - "optimism", "opt" → "optimism"
+2. Recognize common chain abbreviations and map them to chainIds as strings:
+   - "eth", "ethereum" → 1
+   - "bsc", "binance", "binance smart chain" → 56
+   - "arb", "arbitrum" → 42161
+   - "polygon", "matic" → 137
+   - "avax", "avalanche" → 43114
+   - "optimism", "opt" → 10
 3. Recognize common token abbreviations and aliases:
    - "u", "usdt", "usdt token" → "USDT"
    - "usdc" → "USDC"
    - "dai" → "DAI"
    - "busd" → "BUSD"
    - "eth", "ether" → "ETH"
-4. Recognize common DeFi platforms and normalize their names:
+4. Recognize platforms and normalize:
    - "pancakeswap", "pancake" → "PancakeSwap"
    - "uniswap", "uni" → "Uniswap"
-   - "sushiswap", "sushi" → "SushiSwap"
-   - "quickswap" → "QuickSwap"
+   - "okx", "欧易" → "OKX"
+   👉 If user doesn't specify any platform, default to: "OKX"
 5. Extract the amount as a number string. If user inputs words like "all" or "全部", set amount to "All".
 6. If fromToken or toToken is ambiguous or missing, use simple heuristics:
    - If amount token is stablecoin, assign it as fromToken.
