@@ -6,29 +6,22 @@ import { supportChain } from '../config/chain';
 import { createSiweMessage } from '../utils/siwe';
 import { signJwt } from '../utils/jwt';
 import { SiweMessage } from 'siwe';
+import { okxClient } from '../api/okxDexClient';
+import { errorResponse, Errors } from '../utils/response';
 
 const verifyRouter = express.Router();
 
 const NONCE_EXPIRE = 300;
 
-const statement = "This signature proves you are the owner of this wallet. It's for login purposes only.";
 //GET /api/verify/signinfo
 verifyRouter.get('/signinfo', async (req: any, res: any) => {
     const address = req.query.address;
-    const chainId = req.query.chain;
+    const chainId = req.query.chainId;
     const isAddress = ethers.isAddress(address);
+
     console.log('address', address)
     if (!isAddress) {
-        return res.status(400).json({
-            ok: false,
-            error: 'Invalid ethereum Address'
-        })
-    }
-    if (!supportChain.includes(Number.parseInt(chainId))) {
-        return res.status(400).json({
-            ok: false,
-            error: `chain:${chainId} is not supported.`
-        })
+        return errorResponse(res, 400, Errors.invalidAddress);
     }
 
     const nonce = Math.random().toString(36).substring(2);
@@ -60,11 +53,11 @@ verifyRouter.post('/', async (req: any, res: any) => {
         console.log("originNonce", siwe.nonce);
 
         if (recoveredAddress !== siwe.address) {
-            return res.status(400).json({ ok: false, error: 'Invalid signature.' });
+            return errorResponse(res, 400, Errors.invalidSignature);
         }
 
         if (!expectedNonce || expectedNonce !== siwe.nonce) {
-            return res.status(400).json({ ok: false, error: 'Invalid or expired nonce.' });
+            return errorResponse(res, 400, Errors.invalidNonce);
         }
 
         await redis.del(`siwe:nonce:${recoveredAddress.toLowerCase()}`);
@@ -74,7 +67,7 @@ verifyRouter.post('/', async (req: any, res: any) => {
 
     } catch (error) {
         console.log(error);
-        res.status(400).json({ ok: false, error: 'Signature verification failed.' });
+        return errorResponse(res, 400, Errors.signatureVerificationFailed);
     }
 });
 

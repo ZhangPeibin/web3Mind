@@ -1,19 +1,22 @@
 // src/router/intent.ts
 import express, { Router } from 'express';
-import { askIntent } from '../ai/chat';
+import { askIntent } from '../ai/assistants';
 import { logIntent } from '../db/sql/intent';
 import { jwtAuthMiddleware } from '../middlewares/auth';
+import { error } from 'console';
+import { errorResponse, Errors } from '../utils/response';
 
 const router: Router = express.Router();
 
-router.post('/', jwtAuthMiddleware as any, async (req: any, res: any) => {
-    const { wallet, message } = req.body;
+//jwtAuthMiddleware as any
+router.post('/', async (req: any, res: any) => {
+    const { address, message,chainId } = req.body;
     if (!message) {
-        return res.status(400).json({ error: 'Missing user message' });
+        return errorResponse(res, 400, Errors.missingParam('message'));
     }
-
+    
     try {
-        const result = await askIntent(wallet,message);
+        const result = await askIntent(chainId,address,message);
 
         await logIntent(message, result);
         res.json(result);
